@@ -1,0 +1,49 @@
+.global start
+.intel_syntex noprefix
+
+_start:
+;		Array initialization
+Define		DCD		6,5,4,3,2,1 ; Array initialization with values 6, 5, 4, 3, 2, 1
+			
+			;		Initialization of Registers
+			MOV		R0, #0x104 ; Initialize i = 0 (memory address for the first element of the array)
+			MOV		R1, #0x118 ; Initialize n = size (memory address for the end of the array)
+			
+for_header
+			CMP		R0, R1 ; Compare i with n
+			BGE		for_footer ; Branch to for_footer if i >= n
+			
+			;		Find the index of the minimum element in the unsorted part of the array
+			MOV		R2, R0 ; Initialize min_index = i
+			MOV		R3, R0 ; Initialize j = i
+			
+find_min
+			CMP		R3, R1 ; Compare j with n
+			BGE		min_found ; Branch to min_found if j >= n
+			
+			LDR		R4, [R3] ; Load arr[j] into R4
+			LDR		R5, [R2] ; Load arr[min_index] into R5
+			CMP		R4, R5 ; Compare arr[j] with arr[min_index]
+			BLT		update_min ; Branch to update_min if arr[j] < arr[min_index]
+			
+			B		inc_j ; Branch to inc_j
+			
+update_min
+			MOV		R2, R3 ; Update min_index to j
+			
+inc_j
+			ADD		R3, R3, #0x04 ; Increment j
+			B		find_min ; Branch to find_min
+			
+min_found
+			;		Swap the minimum element with the current element (arr[i])
+			LDR		R6, [R0] ; Load arr[i] into R6
+			LDR		R7, [R2] ; Load arr[min_index] into R7
+			STR		R7, [R0] ; Store arr[min_index] into arr[i]
+			STR		R6, [R2] ; Store arr[i] into arr[min_index]
+			
+			ADD		R0, R0, #0x04 ; Increment i
+			B		for_header ; Branch to for_header
+			
+for_footer
+			END		; End of the program
